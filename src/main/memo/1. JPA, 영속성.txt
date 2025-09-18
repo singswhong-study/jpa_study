@@ -1,0 +1,33 @@
+1. JPA 동작방식
+    - 자바객체를 영속화 하기 위해서는 EntityManager(인스턴스 객체)가 필요하고, EntityManagerFactory 에서 가져온다.
+    - EntityManager 는 영속성 컨텍스트를 통해 영속객체를 관리한다.
+    - 사용자는 EntityManager 객체의 메소드들로 영속객체를 관리한다. persist, find, remove, merge...
+
+2. 영속성 컨텍스트
+    - EntityManager 단위로 관리됨. 일종의 메모리 저장소.
+    - 고유ID를 갖는 "영속객체" 인스턴스의 집합.
+    - new customer 를 했을때는 일반적인 자바객체, em.persist(customer) / 또는 find 했을때 영속객체로서 영속성 컨텍스트에 등록된다. => 1차 캐시. 실제로 DB에 반영되지는 않았다.
+    - em.find() 는 1차캐시에서 해당 객체를 검색하고 없을때는 select 쿼리로 db에서 조회
+    - 즉, 영속성 컨텍스트는 application 과 database 의 중간에 위치함.
+    - 내부에 SQL저장소가 존재해서 쿼리들이 저장되어있다 (쓰기지연) 이놈들이 tx.commit 혹은 flush 될때 반영된다.
+    - 객체의 변경사항은 1차캐시의 스냅샷 정보를 통해 판별한다. 영속 객체는 ID, EntityObject, SnapShot 정보가 존재함.
+    - 영속성 컨텍스트에 존재하는 영속 객체는 상태의 변경(클래스의 필드값 변경 등) 에 따라 update 쿼리 생성하는데 객체를 snapShot 과 비교한다.
+    - flush : 영속성 컨텍스트의 내용을 DB와 동기화. 커밋되기 직전에 자동 flush 시도한다.
+    - * flush로 영속성 컨텍스트의 내용을 DB에 반영되는건 맞지만, commit 되기전에 확인을 해봐도 내용이 실제 변경되지 않음. rollback이 될수있어야 하므로.
+    - em.flush() , 트랜잭션을 통한 자동 flush, JPQL 쿼리 실행을 통한 자동 flush
+        - * em.persist(obj1), em.persist(obj2) 를하고 JPQL로 createQuery 하여 select를 한다 했을 때, flush가 되지 않으면 obj1,2는 조회되지 않는다. 즉 flush가 선행된다.
+        => flush는 디비와 영속컨텍스트를 동기화 한다는 개념을 이해해야함.
+
+    - flush를 실행한 이후에도 영속성 컨텍스트의 내용은 유지된다.
+
+3. Entity 생명주기 life cycle
+    1) 비영속(new) : 관리되기 이전 순수객체
+    2) 영속(managed) : 영속성 컨텍스트로 관리되는 상태. >>변경추척<<
+    3) 준영속(detached) : 영속성 컨텍스트의 관리에 있다가 분리된 상태 >>변경추적하지 않음<<
+    4) 삭제(removed) : 영속 데이터의 삭제를 위한 상태. 이 상태에서 tx.rollback() 된다면 detached.
+
+    - new 에서 em.persist() 되면 managed
+    - find() 로 조회되면 managed
+    - managed 에서 remove() 되면 removed, 다시 persist되면 managed
+    - managed 에서 detach(), clear(), close() 된다면 detached. 다시 merge() 된다면 managed
+

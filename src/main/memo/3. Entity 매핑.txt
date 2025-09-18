@@ -1,0 +1,30 @@
+<Entity Mapping>
+
+- 도메인객체를 RDBMS TABLE로 매핑할때는 @Entity 어노테이션
+- 테이블 이름은 클래스 이름이 되고, 대소문자 치환은 되지 않는다. 다만 큰 문제가 발생하지는 않음. RDBMS는 대소문자를 가리지 않으므로.
+- @Table 어노테이션을 사용해서 테이블 이름을 명시적으로 표기할 수 있다.
+
+- Entity 에는 default constructor 가 필수. 기본생성자는 public 혹은 protected **********
+    => JPA 데이터를 가져온 후 new Obj 를 해서 영속객체로 리턴한다. 즉 생성자가 필요함.
+
+- inner class, interface, enum 등은 영속객체가 될 수 없다. 최상위 클래스여야 함.
+- 영속객체 field 에는 final을 사용하지 않는다.**
+    => 해당 필드들이 set 되어야 하는데 final 초기화 이후에는 변경할수 없으므로..
+
+
+1) @Table : 생략하면 클래스 이름과 도일한 이름에 매핑
+    - name
+    - catalog : MySQL DB 이름같은거
+    - schema : 오라클 스키마 이름 같은거
+    - uniqueConstraints(유니크 제약조건) 설정 가능. => 스키마 자동생성 기능을 사용할때만 적용가능.
+
+2) 스키마 자동생성 옵션
+    - create : 테이블 drop + create. 지우고 만듬.
+    - create-drop : 테이블 create 후 프로그램 종료시 drop
+    - update : 수정
+    - validate : 영속객체와 테이블 매핑 확인
+    - none : 사용하지 않음
+
+=> 테이블을 직접 만들고 사용하지 않고 JPA가 DDL을 날리게 할수도 있음. 로컬에서만 사용하자;
+
+

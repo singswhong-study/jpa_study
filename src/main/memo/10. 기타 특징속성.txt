@@ -1,0 +1,41 @@
+1. AttributeConverter
+    - 매핑을 지원하지 않는 자바타입과 DB타입 간의 변환 처리
+        ex) boolean 타입과 char(1)의 변환
+            1. AttributeConverter를 구현하는 "ConvertFunction.class" 를 구현함
+            2. boolean 은 char(1), char(1) 은 boolean 으로 변환해서 리턴하는
+                contvertToDatabaseColumn(), convertToEntityAttribute() 를 오버라이드해서 구현함
+
+            3. 상호변환할 필드에 @Convert(converter = "ConvertFunction.class"); 선언
+
+
+2. @Formula
+    - 조회에서만 매핑처리(SQL의 실행결과를 특정한 필드에 매핑하고싶을때). insert나 update에는 포함안됨.
+    - 특정필드에
+        @Formula("(select c.name from category c where c.cat_id = cat)")
+        private String category;
+        이런식으로.
+    - 하이버네이트 제공기능
+    - DB함수 혹은 서브쿼리 결과를 매핑
+    -
+
+3. 수정쿼리의 컬럼은 기본적으로 모든컬럼.
+    - @DynamicUpdate : 변경된 컬럼만 업데이트포함
+    - @DynamicInsert : null이 아닌 컬럼만 인서트에 포함. => null 지정할때는 사용하면 X
+
+4. @Immutable
+    - 변경 추적 대상에서 제외처리
+    - 변경 추적을 위한 메모리 사용을 줄임.
+    - 주로 조회 목적으로 사용되는 엔티티 매핑에 사용
+    - 해당 어노테이션이 적용된 엔티티도 저장은 됨. BUT 코드수준에서 persist 주의필요.
+
+5. @Subselect
+    - select의 결과를 엔티티로 매핑
+    - 수정대상이 아니므로 @Immutable 과 함께 사용
+    - 엔티티어노테이션 위에서 select 하고, 그 결과를 기준으로 해당 엔티티와 매핑.
+    - 실 쿼리는 select ... from (select ... from table) 이런식.
+
+
+6. 상속매핑, 네이티브쿼리 도 있다.
+
+7. @CreationTimestamp, @UpdateTimestamp 자동으로 인서트 업데이트때 넣어줌.
+

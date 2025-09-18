@@ -1,0 +1,42 @@
+<필드와 컬럼 Mapping>
+
+1. @Column
+    - 영속 객체 필드와 데이터베이스 테이블의 열Column을 매핑할때 사용
+        @Column(name = "USER_ID", nullable = "false")
+        private Long userId;
+    - nullable, unique, length, precision, scale, insertable, updatable.. 등등
+
+
+2. @Basic
+    - 생략 가능한 어노테이션. 기본어노테이션
+    - 엔티티 필드값에 아무 어노테이션이 없으면 @Basic.
+    - JPA 구현체 hiberbate 같은 곳 에서 데이터 타입을 기본형 매핑을 제공.
+    - fetch, null인지 아닌지 여부
+
+3. Temporal (TemporalType.Date / TIME / TIMESTAMP)
+    - 영속객체의 날짜 및 시간 필드에 사용
+    - 디비에 따라 날짜, 시간 등의 컬럽타입이 다르기때문에 지정.
+    - localdate, localtime, localDateTime 등을 사용할 때는 적용X
+
+4. @Lob
+    - 대규모의 데이터를 저장하기 위해 BLOB(Binary Large Object), CLOB(Character Large Object) 데이터 유형 지원
+    - @Basic(fetch=FetchType.LAZY) 을 설정해서 사용.
+    - 엔티티를 가지고 올때는 로딩하지 않다가 해당 필드를 사용하는 시점에 가져옴.
+
+5. @Enumerated
+    - 열거형 유형 정의
+    - 배열과 동일하게 ordinal이라 부르는 인덱스 값에 연결됨.
+    - 기본값으로 EnumType.ORDINAL 이 적용됨.
+    - EnumType.String 선언 시 문자열로 저장.
+    enum userType {
+        A, B, C
+    }
+    가 있을때 A를 저장한다고 한다면
+    ORDINAL 일때는 index 0이 저장 => 이거는 enum 데이터가 수정되면.. 대참사가 벌어짐; 그래서 String을 쓴다.
+    String 일때는 "A" 가 저장
+
+6. @Transient
+    - 적용된 필드는 영속화 되지 않는다.
+    - 실행시점에 참조되는 필드 또는 계산되는 필드에 사용
+    - 어노테이션을 쓰거나, transient public String.. 이런식으로 붙여도 노상관.
+

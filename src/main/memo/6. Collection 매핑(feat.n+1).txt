@@ -1,0 +1,42 @@
+<Collection 매핑>
+
+1) Set
+    - 단순한 값을 set으로 보관
+        @ElementCollection(fetch =  FetchType.EAGER)        //Eager로 지정하게 되면 left join 으로 바로 조회, lazy는 해당 permission에 접근할때 조회.
+        @CollectionTable
+        을 사용해서 해당 필드를 매핑시키면 된다.
+
+2) List
+    - Set과 대동소이
+        @ElementCollection(fetch =  FetchType.EAGER)
+        @CollectionTable
+        @OrderColumn
+        을 사용해서 해당 필드를 매핑시키면 된다.
+
+3) Map
+    - Set과 대동소이
+        @ElementCollection(fetch =  FetchType.EAGER)
+        @CollectionTable
+        @MapKeyColumn
+
+
+4) 콜랙션 매핑시 주의사항.
+    1) 어떤 객체에 콜랙션을 매핑해두고 조회한다고 하고 limit 처리를 했을 때
+        - fetch 를 eager로 하더라도
+        - select 객체 limit 을 조회하고, 해당 리스트를 루프 돌면서 콜랙션 에 접근할때 콜랙션을 하나하나 조회한다.
+            => 불필요한 쿼리가 발생해버림
+
+    2) 그럼. join fetch 를 사용한다면?
+        - limit 페이징 처리가 제대로 먹히지 않고, 객체와 콜랙션을 조인한 전체 데이터를 조회하고
+          ">> 메모리 <<" 상에서 페이징 처리를 한다.
+            => 데이터가 많으면 아웃오브메모리..?
+
+    3) 결론. 페이징 처리를 할때는 많은 고민이 필요하다.
+        => JPA 만으로는 해결하기 힘들때가 많다.
+        - CQRS. Command Query Responsibility Segregation ===========> 최범균님이 추천쓰;
+        - 변경기능은 JPA 활용, 조회기능은 mybatis/ jdbctemplate 등을 활용.
+            => 명령모델(상태변경) 과 조회 모델은 구분을 해라.
+
+
+
+

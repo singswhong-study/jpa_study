@@ -1,0 +1,91 @@
+<Spring Data JPA>
+
+1. persistence.xml , EntityManagerFactory 는 자동설정
+2. 스프링 트랜잭션과 연동. EntityManager 연동.
+    => 편의성 ++
+
+3. spring-boot-starter-data-jpa 의존성
+4. 엔티티 단위로 Repository 인터페이스를 상속받은 인터페이스 생성
+    - 이 인터페이스를 상속한 인터페이스를 이용해 bean 객체 생성.
+5. 지정한 규칙에 맞게 메서드 추가
+6. 필요한곳에 인터페이스 주입하여 사용.
+
+
+7. save()
+    - save 시에 select 후 insert가 실행된다
+    - 새 엔티티는 persist 실행, 아니면 merge 실행.
+        => 새 엔티티 판단기준이란?
+           - Persistable 로 구현한 엔티티는 isNew 로
+           - @Version 속성이 있는경우 버전값이 null 인지
+           - 식별자가 참조타입일때 null 이면
+           - 식별자가 숫자 타입일때 0이면
+
+8. 특정조건으로 찾기
+    - findByName
+    - findByNameAndAge
+
+9. 조건 비교
+    - findByNameLike(String keyword)
+    - findByCreateAtAfter(LocalDateTime time)
+    - findByYearBetween(int from int to)
+    - LessThan, IsNull... 등등
+
+10. 주의. findBy 메서드를 남용하면 안됨. => 검색조건이 다양하면 @Query , SQL , QueryDSL 등을 사용
+
+11. 정렬을 할때는
+    - findByNameLikeOrderByNameDesc(String keyword)
+    - Sort 사용
+        1) sort 하나만.
+            Sort sort = Sort.by(Sort.order.asc("name"))
+            findByNameLike(String keyword, Sort sort)
+        2) sort 여러개
+            Sort sort = Sort.by(Sort.order.asc("name"), Sort.Order.desc("age"))
+            findByNameLike(String keyword, Sort sort)
+
+12. 페이징
+    - sort 처럼 Pageable pageable 을 사용
+    - Pageable pageable = PageRequest.ofSize(10).withPage(1) // 10개 단위의 2페이지 (0부터 시작)
+        - WithSort 로 정렬순서도 같이 사용
+            ort sort = Sort.by(Sort.order.asc("name"), Sort.Order.desc("age"))
+            Pageable pageable = PageRequest.ofSize(10).withPage(1).withSort(sort)
+
+13. 페이징 결과를 page로 구하려면?
+    - 조회 결과를 Page<엔티티> 로 받고
+    - page.getTotalElements();  // 전체개수
+    - page.getTotalPages();     // 전체 페이지개수
+    - page.getContent();        // 현재페이지 결과모곡
+    - page.getSize();           // 페이지 size
+    - page.getNumver()          // 현재페이지
+    등
+
+
+14. @Query("") : JPQL
+    - 메서드 명을 늘어뜨리지 않고 그냥 JQPL 지정해서 사용
+        @Query("select o from Order o where o.price > :price order by o.orderId asc")
+        List<Order> findCustomOrders(@Param("price") int price);
+
+
+13. Specification
+    - 검색조건을 생성하는 인터페이스
+    - Criteria 를 이용해서 검색조건 생성
+
+14. long count(), long countByNameLike(String keyword) 등으로 카운트 가능
+
+15. @Query(value = "", nativeQuery = true)
+    - JPQL이 아닌 일반적인 SQL 사용가능
+    - 시퀀스에서 식별자를 구해서 사용해야할 경우 같은 때 유용하게 사용가능.
+
+16. 하나의 결과일때는 Order / Optional<Order>
+    - return 이 Order = 없으면 null, Optional 일때는 Optional.empty
+
+17. JPA repo 에는 CRUDRepo,     PagingAndSortingRepo 등등 하위 인터페이스가 있는데 잘 안쓰는 이유?
+    - 명령모델, 즉 CQRS에서 C 일때 메서드 구현을 다 해버려야 한다. => 너무 많음;
+    - 명령모델에서 필요한 repo는 findOne, findById, Save 정도가 필수.
+        => JPARepo를 사용하면 필요하지 않은 메서드를 오용할 가능성이 있다.
+    - 조회모델, 즉 Q 일때 JPA를 상속할 필요성이 딱히..?
+        => 다양한 스펙 조합이 필요하면 JPA, 단순조회는 JDBCTemplate, 복잡하면 MyBatis.
+
+
+
+
+

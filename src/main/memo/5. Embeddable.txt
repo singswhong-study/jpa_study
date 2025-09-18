@@ -1,0 +1,80 @@
+<Emmbeddable>
+
+객체 A의 안에 address1, address2, zipcode 같은 필드들이 있다면
+이는 Address { address1, address2, zipcode } 처럼 분리하는 것이 더 옳을 것이다.
+
+- 엔티티가 아닌 타입을 한개 이상의 필드와 매핑할때 ex) address
+- 엔티티의 한 속성으로 @Embeddable 적용타입 사용
+- 대상이 되는 address 에는 @Embeddable, A 객체의 address 필드에는 @Embedded 어노테이션 사용
+
+- @Embeddable/@Embedded 이 여러개가 된다면? address 는 같은걸 사용하는데 필드만 달라져야 한다면?
+
+    @Embedded
+    private Address address;
+    @Embedded
+    private Address address2;
+    .. 이런식으로 두개를 사용해야 할때는
+
+
+    @Embedded
+    private Address address;
+
+    @AttributeOverrides({
+        @AttributeOverride(name = "address1", column = @Column(name = "subAddress1")),
+        @AttributeOverride(name = "address2", column = @Column(name = "subAddress2")),
+        @AttributeOverride(name = "zipCode", column = @Column(name = "subZipCode"))
+    })
+    @Embedded
+    private Address address2;
+    => AttributeOverrides 로 필드를 따로 매핑해준다.
+
+
+    **** 개별속성을 모아서 "타입" 같은 느낌으로 이해할 수 있다.
+
+
+그럼, 타른 테이블에 값을 저장하고 싶을때는?
+그리고 엔티티가 아니라, 개념적으로 "밸류값" 으로서 사용될때. 그게 아니면 그냥 엔티티 선언하면 되니까..
+
+
+1) @SecondaryTable + 테이블 명 사용
+
+    메인 엔티티에 이런식으로
+        @SecondaryTables({
+            @SecondaryTable(name = "writer", pkJoinColumns = @PrimaryKeyJoinColumn(name="writerId", referencedColumnName = "id")),
+            @SecondaryTable(name = "assist", pkJoinColumns = @PrimaryKeyJoinColumn(name="writerId", referencedColumnName = "id"))
+        })
+    테이블을 설정하고,
+
+    Embedded 필드의 객체에
+
+        @Column(table = "writer", name="userName")
+        private String userName;
+
+        @Column(table = "assist", name="name")
+        private String name;
+
+    이런식으로 테이블 사용을 명시해줌.
+
+    그럼? 테이블이 생성됨. 실 테이블 사용가능.
+
+2) @AttributeOverrides 활용
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "userName", column = @Column(table = "writer2", name = "userName")),
+            @AttributeOverride(name = "point", column = @Column(table = "writer2",name = "point")),
+    })
+    private Writer writer;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "name", column = @Column(table = "assist2", name = "name")),
+            @AttributeOverride(name = "type", column = @Column(table = "assist2",name = "type")),
+    })
+    private Assist assist;
+
+    => 객체에는 다른걸 하지 않고, secondary + overrides 활용해서 만듬.
+
+
+
+

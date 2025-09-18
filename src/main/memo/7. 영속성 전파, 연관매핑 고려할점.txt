@@ -1,0 +1,37 @@
+<영속성 전파와 고려사항>
+
+팀에 manyTone으로 선수를 설정한 관계라면
+
+    Player p1 = em.find(Player.class, "P1");
+    Set<player> players = Set.of(p1);
+    em.persist(new Team("T-02", "2팀", players));
+
+이렇게 했을 때는 문제가 없지만
+
+    Player p1 = new player("선수1", "P1"); ***
+    Set<player> players = Set.of(p1);
+    em.persist(new Team("T-02", "2팀", players));
+
+이런식으로 하면 오류가 발생한다. 왜와이? db에 선수가 없기때문에.
+그렇다면 꼭 p1을 저장하고 진행해야하나? => 지원 합니다.
+
+    >> 영속성전파 <<!!
+
+cascade 설정을 전파하면 된다.
+@OneToMany(
+    cascade = CascadeType.PERSIST // 이 종류는 ALL, PERSIST, MERGE, REMOVE, DETACH, REFRESH 다 설정가능.
+)
+연관관계 대상에 캐스케이드를 설정하면 됨.
+
+BUT!!!!!! 기본적으로 사용하지 말자. (최범균님 말씀. 10년동안 딱 한번 사용하셨다고;;)
+
+>>>>>>> 고려사항 <<<<<<<<
+1. 연관 대신에 ID값으로 참조 고려
+    - 객체 탐색이 쉽긴하지만 문제 발생가능성 ++
+2. 조회는 전용쿼리나 구현 사용 고려..CQRS
+3. 엔티티가 아닌 밸류인지 확인 (1-1, 1-N에서는 특히 고민많이 해야함)
+4. 어떻게든 사용해야 한다면 1-N 보다는 N-1을 ...
+5. 양방향 X
+
+
+
