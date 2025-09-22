@@ -32,5 +32,5 @@
     @JoinColumn(name = "email")
 
 4) 1-N 단방향 연관 매핑
-    @OneToMany
+    @OneToMany                      // 기본 LAZY
     @JoinColumn(name = "email")
